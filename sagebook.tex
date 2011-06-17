@@ -2079,7 +2079,8 @@ distinction if you want to make truly effective use of computers.
 The following example illustrates overflow:
 %skip
 \begin{lstlisting}
-def longmul(long a, long b):
+%cython
+def longmul(long a, long b): 
     return a*b
 \end{lstlisting}
 Now let's try it:
@@ -2090,8 +2091,8 @@ sage: longmul(2^10, 2^20)
 1073741824
 sage: longmul(2^20, 2^50)   # overflows!
 0
-sage: 2^40 * 2^50
-1237940039285380274899124224
+sage: 2^20 * 2^50
+1180591620717411303424
 \end{lstlisting}
 
 
