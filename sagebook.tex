@@ -20,7 +20,7 @@
 \usepackage{graphicx}
 \newcommand{\sagegraphic}[2]{\begin{center}\includegraphics[width=#1\textwidth]{graphics/#2}\end{center}}
 
-\title{Sage for Power Users:\\Open Source Mathematical Software}
+\title{Sage: Creating a Viable Free Open Source Alternative to Magma, Maple, Mathematica and Matlab}
 
 \author{William Stein}
 
@@ -52,18 +52,18 @@ This book is licensed under the creative commons Attribution 3.0 license:
  
 \section{The Sage Project}
 
-I started the Sage project in late 2004 in order to create a viable
-free open source alternative to the Magma computer algebra system
-Magma.  My main motivation was frustration with not being
-allowed to easily change or understand the internals of Magma, worry
-about the longterm future of Magma, and concern that students and
-researchers in number theory could not easily use the Magma-based
-tools that I had spent many years developing.  I started Sage as a new
-project instead of switching from Magma to an existing open source
-system, since the capabilities of all existing open source software
-for number theory was far behind Magma.  With similar motivation,
-several hundred people have become involved in Sage development, and
-the goals have broadened. 
+I started the Sage project in early 2005 in order to create a viable
+free open source alternative to the Magma computer algebra system.  My
+main motivation was frustration with not being allowed to easily
+change or understand the internals of Magma, worry about the longterm
+future of Magma, and concern that students and researchers in number
+theory could not easily use the Magma-based tools that I had spent
+many years developing.  I started Sage as a new project instead of
+switching from Magma to an existing open source system, since the
+capabilities of all existing open source software for number theory
+was far behind Magma.  With similar motivation, several hundred people
+have become involved in Sage development, and the goals have
+broadened.
 
 Sage uses a mainstream programming language, unlike Maple,
 Mathematica, Magma, Matlab, PARI, GAP, etc., which use their own
@@ -369,23 +369,23 @@ love it.
 
 This chapter is a breakneck introduction to Python, and assumes you
 have some previous background in programming.  Some other good
-references for learning the Python if you already know a programming
-language are {\em The Python Tutorial} (free at
+references for learning the Python language if you already know a
+programming language are {\em The Python Tutorial} (free at
 \url{http://docs.python.org/}) and {\em Dive Into Python} (also free
 at \url{http://diveintopython.org/}).  If you know nothing about
 programming, do a search on \url{http://amazon.com} for {\sf python
   programming} and you'll find hundreds of results such as {\em Python
-  Programming for the Absolute Beginner, 3rd Edition}.  Probably the best
-non-free Python reference manual is {\em Python in a Nutshell} (see
-\url{http://oreilly.com/catalog/9780596001889}).
+  Programming for the Absolute Beginner, 3rd Edition}.  Probably the
+best non-free Python reference manual is {\em Python in a Nutshell}
+(see \url{http://oreilly.com/catalog/9780596001889}).
 
 \section{What is Python?}
-Python is a popular free open source
-language with {\em no} particular company pushing it.  Python is not
-like Java, which is pushed by Sun/Oracle, or C\#/.NET, which is pushed
-by Microsoft, though many many big companies use it heavily, and fund
-its development.  Python is free to use, even in commercial products,
-because it is fully open source.  From \url{http//python.org}:
+Python is a popular free open source language with {\em no} particular
+company pushing it.  Python is not like Java, which is pushed and
+prodded by Oracle, or C\#/.NET, which is pushed by Microsoft, though
+many many big companies use it heavily, and fund its development.
+Python is free to use, even in commercial products, because it is
+fully open source.  From \url{http//python.org}:
 \begin{quote}
   ``Python is a programming language that lets you work more quickly
   and integrate your systems more effectively. You can learn to use
@@ -980,7 +980,7 @@ def good_function(a, b = 10):
 Python classes are typically used to define your own new data type
 (though they can be used in other ways as well).  New classes are easy
 to define, and support standard object-oriented features such as
-``multiple inheritance'' and ``operating overloading''.
+``multiple inheritance'' and ``operator overloading''.
 
 Here is a simple example to get us started:
 
@@ -1869,7 +1869,6 @@ of the Python-based components of Sage attests:
  \item SymPy -- a lightweight Python library for symbolic mathematics.
  \end{itemize}
 
-\newpage
 \section{Exercise: Build Python from Source}
 If your computer operating system is Linux or OS X (with XCode
 installed), it is an easy ``exercise'' to build the Python language
