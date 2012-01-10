@@ -20,7 +20,7 @@
 \usepackage{graphicx}
 \newcommand{\sagegraphic}[2]{\begin{center}\includegraphics[width=#1\textwidth]{graphics/#2}\end{center}}
 
-\title{Sage: Creating a Viable Free Open Source Alternative to Magma, Maple, Mathematica and Matlab}
+\title{Sage for Power Users}
 
 \author{William Stein}
 
@@ -32,62 +32,66 @@
 
 %\part{Sage, Python and Cython}
 
-\chapter{Introduction}
+\chapter*{Preface}
 This is a book about Sage \url{http://sagemath.org}, which is a large
-free open source software program for computational mathematics.  
+free open source software project that I started in 2005, whose
+``mission statement'' is to create a viable free open source
+alternative to the commercial programs Magma, Maple, Mathematica, and
+Matlab.  I have given more talks, tutorials, and workshops on Sage
+than I can count, and this book records what I have found to be the
+most important key ideas that are needed to make effective use of
+Sage.  My intention is that you read the whole book cover-to-cover.
 
-The audience of this book is undergraduates learning Sage and Python,
-who have previous computer programming experience and want to write
-fast powerful programs and really understand their tools.  The author
-strongly believes people should learn to deeply understand their
-tools.  This is a big motivation for open source in the first place,
-and also a theme of the book.  This book is also far from self
-contained, and the reader will be repeatedly pointed to other specific
-tutorials and reference materials.
 
-This book is licensed under the creative commons Attribution 3.0 license: 
-\begin{center}
-\url{http://creativecommons.org/licenses/by/3.0/}
-\end{center}
+% Background
+I assume that you have some previous computer programming experience,
+but not necessarily in Python.  Though I'll make reference to many
+mathematical topics when illustrating how to use Sage, do not worry if
+some are not familiar to you.
+
+% License
+This book is licensed under the creative commons Attribution 3.0
+license (see \url{http://creativecommons.org/licenses/by/3.0/}), which
+mean it will always be freely available in many formats. 
+
  
+\chapter{Introduction to Sage}
 \section{The Sage Project}
 
 I started the Sage project in early 2005 in order to create a viable
 free open source alternative to the Magma computer algebra system.  My
 main motivation was frustration with not being allowed to easily
-change or understand the internals of Magma, worry about the longterm
-future of Magma, and concern that students and researchers in number
-theory could not easily use the Magma-based tools that I had spent
-many years developing.  I started Sage as a new project instead of
-switching from Magma to an existing open source system, since the
-capabilities of all existing open source software for number theory
-was far behind Magma.  With similar motivation, several hundred people
-have become involved in Sage development, and the goals have
-broadened.
+change or understand the internals of Magma and a deep concern that
+students and researchers in number theory could not easily use the
+Magma-based tools that I had spent many years developing.  I started
+Sage as a new project instead of switching from Magma to another
+system, since the capabilities of any available software for number
+theory at the time was far behind certain key features of
+Magma\footnote{In particular, Magma's tools for linear algebra over
+  the rational numbers and finite fields was vastly superior to
+  anything available anywhere else.}.  Several hundred people have
+since become involved in Sage development, and the goals have
+broadened substantially.
 
 Sage uses a mainstream programming language, unlike Maple,
 Mathematica, Magma, Matlab, PARI, GAP, etc., which use their own
 special purposes languages written just for mathematics.  One works
-with Sage using Python, which is one of the world's most popular {\em
-  general purpose} scripting languages.  By using Python, one can use
-almost {\em anything} ever written in Python directly in Sage.  And
+with Sage using Python, which is one of the world's most popular 
+  general purpose scripting languages.  By using Python, one can use
+almost anything ever written in Python directly in Sage.  And
 there is much useful Python code out there that addresses a wide
 range of application areas.
 
-Instead of writing many of the core libraries from scratch like Maple,
-Mathematica, Magma, Gap, PARI, Singular, and Matlab did, in Sage I
-assembled together the best open source software out there, and built
-on it, always making certain that the complete system was easily
-buildable from source on a reasonable range of computers.  I was able
-to do this to a large extent with Sage because of fortuitous timing:
-the components were out there and mature, their code is stable, and
-their copyright licences are clear and compatible (none of this was
-the case when the afformentioned math software was started).  Of
-course there are drawbacks to this approach.  Some of the upstream
-libraries can be difficult to understand, are written in a range of
-languages, and have different conventions than Sage.  By strongly
-encouraging good relations with the projects that create many of the
-components of Sage, we turn these weakness into strengths.
+Instead of writing many of the core libraries from scratch like most
+math software systems have done in Sage I assembled together the best
+open source software out there, and built on it\footnote{Sage includes
+  over 500,000 lines of code that does not come from third party
+  projects.}.  Also, the complete system is easily buildable from
+source on a range of computers.  There are challenges: some of the
+upstream libraries can be difficult to understand, are written in a
+range of languages, and have different conventions than Sage.  Thus it
+is important to strongly encouraging good relations with the projects
+that create many of the components of Sage.
 
 A wide and vibrant community of developers and users have become
 involved with Sage.  Due to the broad interests of this large
@@ -104,58 +108,54 @@ to Magma, Maple, Mathematica, and Matlab.
 
 Sage is a free open-source mathematics software system licensed under
 the GNU Public License (GPL). It combines the power of about 100
-open-source packages with a large amount of new code written in Python
-and Cython to provide a free open source platform for mathematical
-computation.  Sage has many notable features.
+open-source packages with a large amount of new code to provide a free
+open source platform for mathematical computation.  Sage has many
+notable features.
 
 \begin{itemize}
-\item Sage is free, due mainly to the volunteer effort of hundreds of people
-and generous funding from the National Science Foundation, private
-donations, and other organizations such as Google and Microsoft.
-There are no license codes or copy protection.  Sage is also open
-source, so there are absolutely no secret or proprietary algorithms
-anywhere in Sage.  There is nothing that you are not allowed to see or
-change.
+\item Sage is free, due mainly to the volunteer effort of hundreds of
+  people and generous funding from the National Science Foundation,
+  private donations, and other organizations such as Google and
+  Microsoft.  There are no license codes or copy protection.  Sage is
+  also open source, so there are absolutely no secret or proprietary
+  algorithms anywhere in Sage.  There is nothing that you are not
+  allowed to see or change.
 
-\item Sage uses the mainstream programming language Python.  Learning Sage
-will make you proficient in this popular, widely used, and well
-supported free programming language, which you will likely also use
-for other non-mathematics projects.  Moreover, Sage features the Cython
-compiler, which allows one to compile code and use native machine
-types for potentially huge speedup and easy reuse of existing C, C++,
-and Fortran code and libraries.
+\item Sage uses the mainstream programming language Python.  Learning
+  Sage will make you proficient in this popular, widely used, and well
+  supported free programming language, which you will likely also use
+  for other non-mathematics projects.  Moreover, Sage features the
+  Cython compiler, which allows one to combine Python, C/C++/Fortran
+  libraries, and native machine types for potentially huge speedups.
 
-\item Sage is uniquely able to combine functionality from dozens of other
-mathematical software programs and programming languages via smart
-psuedoterminal interfaces.  You can combine Lisp, Mathematica, and C
-code to attack a single problem.
+\item Sage is uniquely able to combine functionality from dozens of
+  other mathematical software programs and programming languages via
+  smart psuedoterminal interfaces.  You can combine Lisp, Mathematica,
+  and C code to attack a single problem.
 
-\item Sage has a sophisticated and very full featured web-based graphical
-user interface, in addition to a highly customizable and actively
-developed command line interface.
+\item Sage has both a sophisticated multiuser web-based graphical user
+  interface and a powerful command line interface.  Sage can also be
+  made to work with any other Python interactive development environment (IDE).
 
-\item Sage has the widest range of mathematical capabilities of any
-mathematical software available: the components of Sage are developed
-by professionals in pure and applied mathematics, numerical computing,
-statistics, science, and engineering.  This is an active and
-enthusiastic worldwide community of users and developers, with
-numerous high volume mailing lists and other forums for getting help.
+\item Sage may have the widest range of mathematical capabilities of
+  any single mathematical software system available.  Sage and its
+  components are developed by an active and enthusiastic worldwide
+  community of people from many areas of mathematics, science, and
+  engineering.
 
-\item Sage is mature, having been around since early 2005, built out of
-components many of which have been around for several decades.  Every
-modification to Sage is publicly peer reviewed, and what goes into
-Sage is decided via community discussions; if you have a brilliant
-idea, the energy, and can clearly argue that something should go into
-Sage, it will.  All known bugs in Sage, and all discussions about them
-are available for all to see.
+\item Modifications to Sage are publicly peer reviewed, and what goes
+  into Sage is decided via community discussions; no matter who you
+  are, if you have a brilliant idea, the energy, and can clearly argue
+  that something should go into Sage, it probably will.  Known bugs in
+  Sage, and all discussions about them are available for all to see.
 \end{itemize}
 
-Thus Sage is nothing like Magma, Maple, Mathematica, and Matlab, in
-which details of their implementations of algorithms is secret, their
-list of bugs are concealed, how they decide what gets included in each
+Sage is nothing like Magma, Maple, Mathematica, and Matlab, in which
+details of their implementations of algorithms is secret, their list
+of bugs is concealed, how they decided what got included in each
 release is under wraps, their custom programming language locks you
 in, and you must fight with license codes, copy protection and
-crippled web interfaces.
+intentionally crippled web interfaces.
 
 \section{``This unique American idea of the
   entrepreneurial company.''}
@@ -181,9 +181,9 @@ of mathematical software is not necessary.
 \end{quote}
 
 Wolfram, who founded the company that sells Mathematica, admits that
-the mathematical community hates some of what he has done, but argues
-that the closed source commercial model is the only approach that
-could possibly work.
+the mathematical community hates some of what he has done, arguing
+that a closed source commercial model is the only approach that
+can possibly work.
 
 \begin{quote}
   ``There's another thing, quite honestly, that that community has a
@@ -204,23 +204,21 @@ could possibly work.
 \end{quote}
 
 
-When it is exists, open source software is better for everybody,
-except perhaps companies that make less money as a result of increased
-competion.  The  hard problem is creating high quality open source
-software.  Sage has made some progress in this direction, but much
-work still remains to be done.  I hope you will find a way to help.
-
-Oh, and TeX is undoubtedly more widely used than Mathematica today.
-
+\noindent{}For the last 20 years, Matlab, Mathematica, and the other
+commercial systems have dominanted with on the order of a hundred
+million dollars a year in revenue.  If the Sage project succeeds at
+its goals (still a big if), it will have proved that Wolfram is wrong
+and radically change the landscape of computational mathematics.
 
 \section{Getting Started}
 The easiest way to get started with Sage right {\em now} is to visit
-\url{http://flask.sagenb.org} and login using OpenID by clicking one
-of the buttons at the bottom right.  This should work with nearly any
-operating system and browser combination.  Using Sage via the above
-webpage is fine if you just want to use Sage via the notebook, e.g.,
-for learning Python (Chapter~\ref{ch:python}) and Cython
-(Chapter~\ref{ch:cython}).  
+\url{http://480.sagenb.org} and login using OpenID by clicking one of
+the buttons at the bottom right.  This should work with nearly any
+operating system and browser combination\footnote{I recommend that you
+  avoid using Internet Explorer if at all possible.}.  Using Sage via
+the above webpage is fine if you just want to use Sage via the
+notebook, e.g., for learning Python (Chapter~\ref{ch:python}) and
+Cython (Chapter~\ref{ch:cython}).
 
 
 There are some situations where you will instead want to install Sage
@@ -228,28 +226,40 @@ on your own computer, or get an account on a command-line server on
 which Sage is installed:
 
 \begin{enumerate}
-\item You have a bad (or no) Internet connection.
 \item You want to use the Sage command line interface.
 \item You want to use the interactive command line profiler and
-  debugger, which haven't been properly ported to the notebook yet (see
-  Chapter~\ref{ch:profdeb}).
-\item You want to modify Sage and contribute back new code (see Chapter~\ref{ch:contrib}).
-\item You want to interface non-free software with Sage (see Chapter~\ref{ch:interfaces}).
-It would be illegal for me to allow just anybody to run Maple/Mathematica/etc. code
-at \url{http://flask.sagenb.org}. 
+  debugger, which haven't been properly ported to the notebook yet
+  (see Chapter~\ref{ch:profdeb}).
+\item You want to modify Sage and contribute back new code (see
+  Chapter~\ref{ch:contrib}).
+\item You want to interface nonfree software with Sage (see
+  Chapter~\ref{ch:interfaces}).  It would be illegal for me to allow
+  just anybody to run Maple/Mathematica/etc. code at
+  \url{http://480.sagenb.org}.
+\item You do not have access to the Internet. 
+
 \end{enumerate}
+
+
+\begin{remark}
+  Eliminating all but the last reason above are current goals of the
+  Sage project.  A command line interface should be added to the
+  notebook, and it should support the profiler and debugger.  It
+  should be possible to edit all files in the source code of Sage, use
+  revision control systems, etc., completely via the web.  Even the
+  legal issue involving nonfree software could be resolved by hooking
+  into our University's authentication system, just as you
+  authenticate for off-campus access to library resources.
+\end{remark}
 
 \section{A Tour}
 
 Sage uses the basic user-interface principle of ``question and
 answer'' found in many other mathematical software systems.  You enter
-input and after pressing the \fbox{\sf return} key in the command line
-interface or pressing \fbox{\sf shift+return} in the notebook
-interface, Sage evaluates your input and returns the result.  Please
-try out at least one variation on every example below for yourself.
-
-%These should all work using either the Sage notebook or the command
-%line.
+input written in a well-defined language and, after pressing the
+\fbox{\sf return} key in the command line interface or pressing
+\fbox{\sf shift+return} in the notebook interface, Sage evaluates your
+input and returns the result.  
 
 A traditional test that Sage is working is to compute 2+2:
 \begin{lstlisting}
@@ -262,17 +272,24 @@ We factor a whole number.
 sage: factor(2012)
 2^2 * 503
 \end{lstlisting}
-How big of a number can Sage easily factor?  Can Sage factor negative
-numbers and rational numbers in a reasonable way?  
+Thus $2012 = 2\times 2 \times 503$.
+Sage can also factor negative numbers and rational numbers:
+\begin{lstlisting}
+sage: factor(-2012/2015)
+-1 * 2^2 * 5^-1 * 13^-1 * 31^-1 * 503
+\end{lstlisting}
 
-A difference
-between Sage and Python is that \verb|^| means exponentiation and
-integer division is exact:
+The language that Sage uses is almost the same as the
+Python programming language.
+One difference between Sage and Python is that \verb|^| means
+exponentiation in Sage but exclusive or in Python.
+Another difference is that integer division results in a rational
+number in Sage, but is floor division in Python.
 \begin{lstlisting}
 sage: 2^3
 8
-sage: 2/3
-2/3
+sage: 2012/6
+1006/3
 \end{lstlisting}
 
 We can also factor symbolic expressions using Sage.  To introduce a
@@ -280,12 +297,14 @@ symbolic variable, use the {\sf var} command.
 \begin{lstlisting}
 sage: var('x,y')
 (x, y)
-sage: F = factor(x^2 - 4*sin(y)^2)
-sage: F
+sage: F = factor(x^2 - 4*sin(y)^2); F
 (x - 2*sin(y))*(x + 2*sin(y))
 \end{lstlisting}%link
 
-If you want to put any result in a \LaTeX{} document, use the {\sf latex} command:
+If you want to put any result in a \LaTeX{} document\footnote{\LaTeX{}
+  is the dominant tool for producing {\em professional} quality mathematical
+  papers and books; it is free and open source and you should learn
+  it.}, use the {\sf latex} command:
 %link
 \begin{lstlisting}
 sage: latex(F)
@@ -298,21 +317,23 @@ $$
 \sin\left(y\right)\right)}
 $$
 
-Of course Sage supports symbolic integration:
+Sage knows Calculus:
 \begin{lstlisting}
 sage: integrate(e^x * sin(x), x)
 1/2*(sin(x) - cos(x))*e^x
+sage: derivative(1/2*(sin(x) - cos(x))*e^x).expand()
+e^x*sin(x)
 \end{lstlisting}
 
-You can also plot functions:
+Sage can plot functions:
 \begin{lstlisting}
-sage: plot(sin(x) + (1-x^2), (x, 0, 2))
-\end{lstlisting}
+sage: g = plot(sin(x) + (1-x^2), (x, 0, 2)); g
+\end{lstlisting}%link
 \sagegraphic{.4}{plot1}
-To include this plot in a \LaTeX{} (or Word) document, save it as a PDF file:
-
+To include this plot in a document, save it as a PDF file:
+%link
 \begin{lstlisting}
-sage: plot(sin(x) + (1-x^2), (x, 0, 2)).save('plot1.pdf')
+sage: g.save('plot1.pdf')
 \end{lstlisting}
 
 We numerically find a root of $\sin(x) + (1-x^2)$ between 0 and 2, as follows:
@@ -321,7 +342,7 @@ sage: find_root(sin(x) + (1-x^2),  0, 2)
 1.4096240040025754
 \end{lstlisting}
 
-You can use other languages from Sage such as Lisp (which is included with Sage):
+You can use some other programming languages directly from Sage, such as Lisp:
 \begin{lstlisting}
 sage: s = "(defun factorial(n)"
 sage: s += "   (if (= n 1) 1 (* n (factorial (- n 1)))))"
@@ -362,30 +383,19 @@ sage: magma_free("Factorisation(2012)")
 
 \chapter{Python}\label{ch:python}
 
-Sage uses the Python programming language, so to make effective use of
-Sage it is critical that you learn the basics of Python.  Fortunately,
-Python is easy to learn, fun, and many people rave about how much they
-love it.  
-
-This chapter is a breakneck introduction to Python, and assumes you
-have some previous background in programming.  Some other good
-references for learning the Python language if you already know a
-programming language are {\em The Python Tutorial} (free at
-\url{http://docs.python.org/}) and {\em Dive Into Python} (also free
-at \url{http://diveintopython.org/}).  If you know nothing about
-programming, do a search on \url{http://amazon.com} for {\sf python
-  programming} and you'll find hundreds of results such as {\em Python
-  Programming for the Absolute Beginner, 3rd Edition}.  Probably the
-best non-free Python reference manual is {\em Python in a Nutshell}
-(see \url{http://oreilly.com/catalog/9780596001889}).
+Sage uses the Python programming language, which is relatively easy to
+learn and fun to use.  This chapter is a quick Sage-oriented
+introduction to Python, which you should supplement with a book.
+Fortunately, the two best books on Python are free: {\em The Python
+  Tutorial} (see \url{http://docs.python.org/}) and {\em Dive Into
+  Python} (see \url{http://www.diveintopython.net/}).
+%The best non-free Python reference manual is {\em Python in a Nutshell} (see
+%\url{http://oreilly.com/catalog/9780596001889}).
 
 \section{What is Python?}
 Python is a popular free open source language with {\em no} particular
-company pushing it.  Python is not like Java, which is pushed and
-prodded by Oracle, or C\#/.NET, which is pushed by Microsoft, though
-many many big companies use it heavily, and fund its development.
-Python is free to use, even in commercial products, because it is
-fully open source.  From \url{http//python.org}:
+company pushing it.  Many big companies such as Google use Python, and
+support its development.   From \url{http://python.org}:
 \begin{quote}
   ``Python is a programming language that lets you work more quickly
   and integrate your systems more effectively. You can learn to use
@@ -396,23 +406,22 @@ fully open source.  From \url{http//python.org}:
 \item {\em Work more quickly}: you get stuff done instead of
      fighting with the language and environment for silly reasons
  \item {\em Integrate your systems}: Python is particular useful at
-     creating big systems out of possibly messy collection of software
+     creating big systems out of possibly messy collections of software
      tools. 
   \item {\em Maintenance costs}: Python code is more likely to be readable
      and hackable. 
    \end{itemize}
 
-   Sage leverages all of the above points: Sage is a big integrated
-   system built out of {\em several million} lines of possibly messy
-   software, code written using Sage tends to be readable and
-   hackable, and people use Sage since it helps them get stuff done
-   immediately.
+   Sage is a big integrated system built out of {\em several million}
+   lines of possibly messy software, code written using Sage tends to
+   be readable and hackable, and people use Sage since it helps them
+   get stuff done immediately.
 
 \section{The Sage Preparser}
 When you type commands into Sage, the computer programming language
-you use is (almost) Python.   Each line of code get potentially slightly
-translated before it is then sent to the Python interpreter.  To see
-exactly what changes occur, use the {\tt preparse} command:
+you use is (almost) Python.  Each line of code gets automatically run
+through a preparser before it is sent to the Python interpreter.  To
+see exactly what changes occur, use the {\tt preparse} command:
 \begin{lstlisting}
 sage: preparse('a = 2.5^3')
 "a = RealNumber('2.5')**Integer(3)"
@@ -422,9 +431,9 @@ As you can see, decimal literals get wrapped using the {\tt
   RealNumber('2.5')}.  Similarly, integer literals get wrapped using
 {\tt Integer}.  Finally, the caret symbol \verb|^| is replaced by {\tt
   **}, which is Python's exponentiation operator.  One motivation for
-doing all this is that in Magma, Maple, Mathematica and Matlab the
-\verb|^|operator is exponentiation, and making Sage have the same
-behavior helps minimize confusion (whereas in Python \verb|^| is
+doing all this is that in Magma, Maple, Mathematica, Matlab and \LaTeX the
+\verb|^| operator is exponentiation, and making Sage have the same
+behavior as those systems helps minimize confusion (whereas in Python \verb|^| is
 ``exclusive or'').  The preparse does a few other things, but not much
 more.
 
@@ -445,7 +454,7 @@ sage: 2/3 + 2^3
 \section{Variables}
 %http://wiki.wstein.org/10/480b/lectures/lec2
 
-In Python you assign to a variable by writing {\tt var = expression}, for example
+In Python you create a variable by writing {\tt var = expression}; for example,
 \begin{lstlisting}
 sage: a = 2
 sage: b = 3
@@ -461,11 +470,19 @@ sage: c + d + e
 27
 \end{lstlisting}
 Note that you do {\em not} have to end lines with a semicolon.
- 
-{\bf Important!} In Python, variable assignment creates a new
-reference to a Python object, not a new copy of that object.  Thus in
-the example below {\tt v} and {\tt w} ``reference'' exactly the same
-Python object:
+
+We have only used integers as the expression, but
+Python supports many other types of objects, such as lists, which 
+we make using square brackets:
+\begin{lstlisting}
+sage: v = [7, 15, 5]; v
+[7, 15, 5]
+\end{lstlisting}
+
+The most important gotcha (and feature) of variables in Python is that
+variables are a {\em reference} to a Python object, not a new copy of
+that object.  Thus in the example below, both {\tt v} and {\tt w}
+``reference'' exactly the same Python list:
 \begin{lstlisting}
 sage: v = [1, 2, 3]
 sage: w = v
@@ -473,20 +490,15 @@ sage: w[0] = 10
 sage: v
 [10, 2, 3]
 \end{lstlisting}
-Continuing the above example, what will the following output?
+Continuing the above example:
 \begin{lstlisting}
 sage: v[1] = 5
 sage: w
-???
+[10, 5, 3]
 \end{lstlisting}
 
-Another example:
+If you want a copy of an object, use the \verb|copy| command. 
 \begin{lstlisting}
-deep:sagebook wstein$ sage
-----------------------------------------------------------------------
-| Sage Version 4.6.2, Release Date: 2011-02-25                       |
-| Type notebook() for the GUI, and license() for information.        |
-----------------------------------------------------------------------
 sage: v = [1,2,3]
 sage: w = v
 sage: z = copy(w)
@@ -495,31 +507,27 @@ sage: print w
 [10, 2, 3]
 sage: z
 [1, 2, 3]
-sage: n = 37
-sage: m = n
-sage: n is m
-True
-sage: z = copy(n)
-sage: z is n
-False
-sage: z
-37
-sage: z == n
-True
-
 \end{lstlisting}
 
-And in MATLAB in contrast we have {\em copy} semantics, which are totally
-different to Python, so watch out.  Also, note that arrays in MATLAB are
-1-based instead of 0-based.
+% sage: n = 37
+% sage: m = n
+% sage: n is m
+% True
+% sage: z = copy(n)
+% sage: z is n
+% False
+% sage: z
+% 37
+% sage: z == n
+% True
+% \end{lstlisting}
+
+The main reason certain people get confused by variables being
+references is that they are used to other software, such as Matlab, in
+which assignment to a variable creates a new copy.  For example
+(noting that arrays in MATLAB are 1-based instead of 0-based),
 \begin{lstlisting}
-wstein@sage:~$ matlab
-                                   < M A T L A B >
-                       Copyright 1984-2006 The MathWorks, Inc.
-                              Version 7.2.0.283 (R2006a)
-                                   January 27, 2006
-  To get started, type one of these: helpwin, helpdesk, or demo.
-  For product information, visit www.mathworks.com.
+$ matlab
 >> v = [1,2,3] 
 v =
      1     2     3
@@ -537,9 +545,14 @@ w =
 
 Like in Magma, Maple, Matlab, and Mathematica, you do not have to
 explicitly declare the type of a variable, and it can have several
-different types in a single snippet of code.  This is completely
-different to the situation with C/C++/Java.  You can use the {\tt
-  type} function at any time to determine the type of a variable.
+different types in a single snippet of code.  This is 
+different to the situation with C, C++ and Java\footnote{Sage 
+is ``dynamically typed'', whereas C, C++ and Java are
+``statically typed''.}.  
+Use the {\tt
+  type} function to determine the type of a variable,
+and the {\tt id} function to find out the memory location
+of the object that a variable references.
 \begin{lstlisting}
 sage: a = 10
 sage: type(a)
@@ -554,7 +567,7 @@ sage: id(a)    # random; new memory location a now points at
 \end{lstlisting}
 
 \section{Control Flow}
-The basic control flow statements in Python are {\tt if}, {\tt while}, and {\tt for}.
+The basic control flow statements in Python are {\tt if}, {\tt while} and {\tt for}.
 The {\bf if} statement lets you choose between alternative code at runtime.
 Here is an example:
 %skip
@@ -573,31 +586,25 @@ and before the colon, and if it evaluates to {\tt True}, then all of
 the code that is indented before the {\tt elif} or {\tt else} is
 executed.  Otherwise, the expression right after {\tt elif} is
 evaluated, and if {\tt True}, then the indented code directly below it
-is evaluated.  Again, otherwise the code under the final {\tt else} is
+is evaluated.  Otherwise the code under the final {\tt else} is
 evaluated.   The {\tt elif} and {\tt else} are optional, and you can have
 any number of {\tt elif} blocks. 
 
-\begin{itemize}
-\item What will the above code output?  Type it in and double check your answer.
-\item If you change the first line to {\tt a = 3; b = 2}, what is the output?
-\item If you change the first line to {\tt a = 3; b = 3}, what is the output?
-\end{itemize}
 
-\begin{remark}
-  Unlike C/C++/Java/C\#/etc., there is no explicit begin/end marker
-  around the block of code that will get evaluated.   If you are
-unfomfortable with this, you can put in a comment like so:
-%skip
+Unlike nearly every other programming language, there are no explicit
+begin and end markers around the block of code that will get evaluated
+when a branch of the if statement is satisfied.  Instead the code is
+indented.  There are at least two advantages to Python's choice:
+(1) you will type and read less, and
+(2) you will not be fooled by
+misleading indentation in code like this C code:
 \begin{lstlisting}
-if a > b:
-    print("hi")
-    c = 10
-#endif  -- comment lines start with a #
+if (a>b)            
+    printf("1");
+    printf("-----");
 \end{lstlisting}
-\end{remark}
 
-
-The {\tt while} statement repeatedly executes all the code indented
+Python's {\tt while} statement repeatedly executes the code indented
 below it until the expression between the {\tt while} and the colon
 evaluates to False, or until an explicit break statement is executed.
 Here is an example:
@@ -619,12 +626,12 @@ When you evaluate this code, you'll see the following output:
 2
 1
 \end{lstlisting}
-What happens is that each time the indented block of code is executed
+Each time the indented block of code is executed,
 the number $i$ is printed out, then the line {\tt i = i - 1} replaces
 {\tt i} by an integer that is one smaller.  Once $0$ is reached, the while
 loop terminates. 
 
-If instead, you set {\tt i = 25} at the top, and evaluate the code, you'll see:
+If instead, we set {\tt i = 25} at the top, and evaluate the code, we see:
 %skip
 \begin{lstlisting}
 25
@@ -634,18 +641,16 @@ If instead, you set {\tt i = 25} at the top, and evaluate the code, you'll see:
 21
 \end{lstlisting}
 This is because the {\tt if} statement evaluates to {\tt True} once
-$i$ hits $20$, and the {\tt break} statement literally ``breaks'' out
-of the while loop.
+$i$ hits $20$, and the {\tt break} statement causes 
+the while loop to terminate.
 
-Finally, you use the {\tt for} loop to iterate over each element in a
-list (or any other ``iterable'' data structure).  (Any {\tt for} loop
-could be simulated using a potentially complicated {\tt while} loop.)
-For example, the code
+Use the Python {\tt for} loop to iterate over each element in a
+list or any other ``iterable'' object.
+For example, 
 %skip
 \begin{lstlisting}
 for i in [1, 2, 3, 4, 5]:
-    s = i*i
-    print(i, s)
+    print(i, i*i)
 \end{lstlisting}
 will make a table of squares:
 %skip
@@ -656,10 +661,9 @@ will make a table of squares:
 (4, 16)
 (5, 25)
 \end{lstlisting}
-You can also use a {\tt break} statement instead a {\tt for} loop,
-just as you could with a {\tt while} loop.
+You can also use {\tt break} in a {\tt for} loop.
 
-There are many clever ways to make lists that you can iterate over
+There are many ways to make lists to iterate over
 (see Section~\ref{sec:lists}), for example:
 \begin{lstlisting}
 sage: range(10)
@@ -697,7 +701,7 @@ results in
 \section{Functions}
 %http://uw.sagenb.org/home/pub/28/
 
-It is straightforward to define a function in Python.
+Use \verb|def| to define a function in Python.
 %skip
 \begin{lstlisting}
 def foo(a, bar, w=10):
@@ -707,18 +711,14 @@ def foo(a, bar, w=10):
     print a, bar, w
 \end{lstlisting}
 The syntax is similar to the syntax of {\tt if}, {\tt for}, and {\tt
-  while}: a keyword, something, a colon, then an indented block of code
-that gets executed under certain circumstances.
-
-To define a function put {\tt def}, the name of the function, then in
-parenthesis the inputs to the function with possible default values
+  while}: a keyword, something, a colon, then an indented block of
+code that gets executed under certain circumstances.  More precisely,
+define a function put {\tt def}, then the name of the function, then
+in parenthesis the inputs to the function with possible default values
 (e.g., {\tt w=10} above makes {\tt w} default to {\tt 10} if {\tt w}
-is not specified).  When Python encounters the function definition it
-parses it for correct syntax, but does {\em not} actually execute the
-code in the function.  When the function is called, e.g., by typing
-{\tt foo(1, 'abc', 5)}, the input variables to the function are set to
-reference the inputs (``call by reference''), and the code in the body
-of the function is executed.
+is not specified).  When the function is called, the input variables
+to the function are set to reference the inputs, and the code in the
+body of the function is executed.
 
 \begin{lstlisting}
 sage: foo(1, 'abc', 5)
@@ -729,17 +729,16 @@ xyz
 1 xyz 10
 \end{lstlisting}
 
-You can explicitly specify how each input variable is set, which can
-make reading the code later easier:
+You can explicitly specify the input variables as follows,
+which can make reading your code later easier:
 \begin{lstlisting}
 sage: foo(bar='gold', a=False, w=3)
 False gold 3
 \end{lstlisting}
 
-Any variables created are assigned to in the body of the function are
+Any variables that are created in the body of the function are
 {\em local to the function}, unless you explicitly use the {\tt
-  global} keyword.  Warning: This is exactly the opposite to how
-it works in Javascript!
+  global} keyword.   For example,
 
 %skip
 \begin{lstlisting}
@@ -751,7 +750,7 @@ def bar(a, b):
 \end{lstlisting}
 
 When we call {\tt bar}, the global variable {\tt d} gets changed, but
-{\tt c} does not change:
+the global {\tt c} does not change:
 %skip
 \begin{lstlisting}
 sage: bar(5, 10)
@@ -763,13 +762,12 @@ sage: print c, d
 
 As illustrated above, a Python function can have side effects, and
 behave differently depending on global variables.  Thus Python
-``functions'' are different than the functions $f:X\to Y$ that you
-work with in mathematics.  In math, $f(x)$ depends only on $x$, not on
-the state of some global variable, the time of day, phase of the moon,
-etc, but in Python {\tt f(x)} can depend on whatever you want.
-For example, here's a Python function that evaluates to $x^2$ when
-the number of seconds since the beginning of UNIX is even, and $x^3$
-when it is odd!
+``functions'' are different than the functions $f:X\to Y$ in
+mathematics.  In mathematics, $f(x)$ depends only on $x$, not on the
+state of some global variable, the time of day, phase of the moon,
+etc, but in Python {\tt f(x)} can depend on more than just {\tt x}.
+The following Python function evaluates to $x^2$ when the number of
+seconds since the beginning is even, and $x^3$ when it is odd:
 
 %skip
 \begin{lstlisting}
@@ -791,8 +789,8 @@ sage: f(7)
 \end{lstlisting}
 
 
-Sage (but not Python) also has a notion of symbolic functions, which
-we will study later.  For example,
+Sage (but not Python) also has a notion of Calculus-style functions.
+For example,
 \begin{lstlisting}
 sage: f(x,y) = sin(x) + e^cos(y)
 sage: f(2,pi)
@@ -804,7 +802,7 @@ sage: plot3d(f, (x,-pi,pi), (y,-2*pi,2*pi), viewer='tachyon')
 \sagegraphic{.6}{3dplot1}
 
 
-\subsection{Call by Reference}
+\subsection{Further remarks on passing variables to functions}
 We mentioned above that Python uses call by reference semantics. 
 The following example helps clarify this point very explicitly.  First
 we create a list and note where it is stored in memory (at address
