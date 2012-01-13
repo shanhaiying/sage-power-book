@@ -450,6 +450,8 @@ sage: 2/3 + 2^3
 26/3
 \end{lstlisting}
 
+Read more about the preparser at \url{http://www.sagemath.org/doc/reference/sage/misc/preparser.html}.
+
 
 \section{Variables}
 %http://wiki.wstein.org/10/480b/lectures/lec2
@@ -469,7 +471,13 @@ sage: c = 7; d = 15; e = 5
 sage: c + d + e
 27
 \end{lstlisting}
-Note that you do {\em not} have to end lines with a semicolon.
+You do {\em not} have to end lines with a semicolon.
+You can also assign the same value to several variables at once:
+\begin{lstlisting}
+sage: c = d = 10
+sage: c + d
+20
+\end{lstlisting}
 
 We have only used integers as the expression, but
 Python supports many other types of objects, such as lists, which 
@@ -509,23 +517,43 @@ sage: z
 [1, 2, 3]
 \end{lstlisting}
 
-% sage: n = 37
-% sage: m = n
-% sage: n is m
-% True
-% sage: z = copy(n)
-% sage: z is n
-% False
-% sage: z
-% 37
-% sage: z == n
-% True
-% \end{lstlisting}
+The {\tt copy} function only copies the {\em references} in the list:
+\begin{lstlisting}
+sage: v = [[1,2], 3, 4]
+sage: w = copy(v)
+sage: w[1] = 10
+sage: w[0][0] = 5
+sage: v
+[[5, 2], 3, 4]
+sage: w
+[[5, 2], 10, 4]
+\end{lstlisting}
 
-The main reason certain people get confused by variables being
-references is that they are used to other software, such as Matlab, in
-which assignment to a variable creates a new copy.  For example
-(noting that arrays in MATLAB are 1-based instead of 0-based),
+To recursively make a new copy of everything (as much as possible), use
+{\tt deepcopy}:
+\begin{lstlisting}
+sage: v = [[1,2], 3, 4]
+sage: w = deepcopy(v)
+sage: w[1] = 10; w[0][0] = 5
+sage: v
+[[1, 2], 3, 4]
+sage: w
+[[5, 2], 10, 4]
+\end{lstlisting}
+
+You probably won't have to use {\tt deepcopy} often.  In over 500,000
+lines of code in the core Sage library, deepcopy is used around 177
+times:
+\begin{lstlisting}
+sage -grep deepcopy |wc -l
+177
+\end{lstlisting}
+
+The main reason many people are very confused by variables being
+references in Python is that most other mathematical software
+(including both Mathematica and Matlab) works differently. For
+example, in Matlab assignment to a variable creates a new copy.  For
+example, noting that arrays in Matlab are 1-based instead of 0-based,
 \begin{lstlisting}
 $ matlab
 >> v = [1,2,3] 
@@ -542,6 +570,27 @@ w =
      1     2     3
 \end{lstlisting}
 
+And in Mathematica,
+\begin{lstlisting}
+In[27]:= v = {1,2,3};
+In[28]:= w = v;
+In[29]:= v[[1]] = 10;
+In[30]:= v
+Out[30]= {10, 2, 3}
+In[31]:= w
+Out[31]= {1, 2, 3}
+\end{lstlisting}
+
+But of course in Sage:
+\begin{lstlisting}
+sage: v = [1,2,3]
+sage: w = v
+sage: v[0] = 10 
+sage: v
+[10, 2, 3]
+sage: w
+[10, 2, 3]
+\end{lstlisting}
 
 Like in Magma, Maple, Matlab, and Mathematica, you do not have to
 explicitly declare the type of a variable, and it can have several
