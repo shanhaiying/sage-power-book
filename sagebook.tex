@@ -13,6 +13,8 @@
 \include{macros}
 \DeclareMathOperator{\Li}{Li}
 
+\renewcommand{\todo}[1]{}
+
 
 \usepackage{pdfsync}
 \usepackage[hypertex]{hyperref}
@@ -37,10 +39,11 @@ This is a book about Sage \url{http://sagemath.org}, which is a large
 free open source software project that I started in 2005, whose
 ``mission statement'' is to create a viable free open source
 alternative to the commercial programs Magma, Maple, Mathematica, and
-Matlab.  I have given more talks, tutorials, and workshops on Sage
-than I can count, and this book records what I have found to be the
-most important key ideas that are needed to make effective use of
-Sage.  My intention is that you read the whole book cover-to-cover.
+Matlab.  I have given many talks, tutorials, and workshops on Sage,
+and this book records what I have personally found to be the most
+important key ideas that are needed to make effective use of Sage.  My
+intention is that you read the whole book cover-to-cover, and have
+thus kept the book intentionally short.   
 
 
 % Background
@@ -50,32 +53,37 @@ mathematical topics when illustrating how to use Sage, do not worry if
 some are not familiar to you.
 
 % License
-This book is licensed under the creative commons Attribution 3.0
-license (see \url{http://creativecommons.org/licenses/by/3.0/}), which
-mean it will always be freely available in many formats. 
+This book is licensed under the Creative Commons Attribution 3.0
+license\footnote{See \url{http://creativecommons.org/licenses/by/3.0/}.}, so
+it will always be freely available in many formats. 
+
+% Overview of book
+\todo{Put an overview of the book -- chapter by chapter -- here.}
 
  
 \chapter{Introduction to Sage}
-\section{The Sage Project}
+\section{Motivation}
 
 I started the Sage project in early 2005 in order to create a viable
-free open source alternative to the Magma computer algebra system.  My
-main motivation was frustration with not being allowed to easily
-change or understand the internals of Magma and a deep concern that
-students and researchers in number theory could not easily use the
-Magma-based tools that I had spent many years developing.  I started
-Sage as a new project instead of switching from Magma to another
-system, since the capabilities of any available software for number
-theory at the time was far behind certain key features of
-Magma\footnote{In particular, Magma's tools for linear algebra over
-  the rational numbers and finite fields was vastly superior to
-  anything available anywhere else.}.  Several hundred people have
-since become involved in Sage development, and the goals have
-broadened substantially.
+free open source mathematical software package that I could use for my
+research. I was frustrated with not being allowed to easily change or
+understand the internals of closed source systems\footnote{For me,
+  this was a powerful niche program called ``Magma''.}  and I had a
+deep concern that my students and colleagues could not easily use the
+commercially distributed software that I had spent many years
+developing (and contributing).  I started Sage as a new project
+instead of switching to another system, since the capabilities of any
+available software for number theory at the time were far behind
+many key features of commercial systems.\footnote{For example, Magma's tools
+  for linear algebra over the rational numbers and finite fields were
+  vastly superior to anything available anywhere else.}  Several
+hundred people have since become involved in Sage development, and the
+goals have broadened substantially.
 
-Sage uses a mainstream programming language, unlike Maple,
-Mathematica, Magma, Matlab, PARI, GAP, etc., which use their own
-special purposes languages written just for mathematics.  One works
+Sage uses a mainstream programming language, unlike all popular
+mathematics software, including Maple,
+Mathematica, and Matlab, which each use their own
+special-purpose languages written just for mathematics.  One works
 with Sage using Python, which is one of the world's most popular 
   general purpose scripting languages.  By using Python, one can use
 almost anything ever written in Python directly in Sage.  And
