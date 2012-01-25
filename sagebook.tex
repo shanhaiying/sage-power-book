@@ -601,20 +601,27 @@ sage: w
 \end{lstlisting}
 
 \begin{remark}
-Another subtle and dangerou difference between Matlab and most other
-languages (including Python/Sage) is that exponentiation associates
-left or right in Matlab, but right to left in Sage.  For example,
+Another subtle difference in various computer 
+languages is that exponentiation may associate either
+left to right or right to left.  For example,
 \begin{lstlisting}
 sage: 3^3^3
 7625597484987
 \end{lstlisting}
-In Matlab, we have
+But in Matlab, we have
 \begin{lstlisting}
 $ matlab
 >> 3^3^3
 19683
 \end{lstlisting}
-So watch out!  
+Finally, in Maple we have
+\begin{lstlisting}
+> 3^3^3 
+syntax error, ambiguous use of `^`, please use parentheses:
+\end{lstlisting}
+Thus watch out: of the two possible design choices about the
+meaning of \verb|3^3^3|, we quickly find three design decisions
+made in practice!
 \end{remark}
 
 Like in Magma, Maple, Matlab, and Mathematica, you do not have to
@@ -810,6 +817,43 @@ sage: foo(bar='gold', a=False, w=3)
 False gold 3
 \end{lstlisting}
 
+Unlike the situation with C/C++/Java, there is {\bf absolutely no way}
+in the Python language to explicitly declare that the types of the
+inputs and outputs of a function.  You can put constraints on types
+explicitly using the {\tt isinstance} function, or using decorators
+(see Section~\ref{sec:decorators}).
+\begin{lstlisting}
+def g(a, b):
+    if not isinstance(a, Integer):
+        raise TypeError
+    return a+b
+\end{lstlisting}
+Then we have:
+\begin{lstlisting}
+sage: g(2, 3)
+5
+sage: g('sage', 'math')
+Traceback (click to the left of this block for traceback)
+...
+TypeError
+\end{lstlisting}
+
+Returning to the function {\tt foo} defined above, it will
+just work with any inputs for which {\tt +} is defined.
+For example, {\tt a}, {\tt b}, and {\tt c} could be strings or lists:
+\begin{lstlisting}
+sage: foo('a', 'b', 'c')
+a= a b= b c= c
+'abc'
+sage: f([1,2], [3,4], [5,6])
+a= [1, 2] b= [3, 4] c= [5, 6]
+[1, 2, 3, 4, 5, 6]
+\end{lstlisting}
+Thus illustrates something in Python called ``duck typing''.  So long
+as an object quacks like a duck (in our case, something that supports
++), then we just treat it like a duck.   In this sense, all Python functions
+are extremely generic. 
+
 Any variables that are created in the body of the function are
 {\em local to the function}, unless you explicitly use the {\tt
   global} keyword.   For example,
@@ -833,6 +877,34 @@ sage: print c, d
 1 10
 \end{lstlisting}
 
+You can also have functions nested within functions (etc.), where the
+nested function is completey hidden within the scode of the function
+that contains it:
+\begin{lstlisting}
+c = 1; d = 1
+def bar(a, b):
+    global d    # this is a rare beast.
+    c = a;   d = b
+    print c, d
+    def foo(x, y):
+        c = 'fun'; d = 'stuff'
+        print c, d
+    foo(c,d)
+    print c,d 
+\end{lstlisting}
+Running this, note that the global c is not changed, and locally
+within {\tt foo} we have yet another pair of variables also called
+{\tt c} and {\tt d} that have nothing to do with the global {\tt c},
+{\tt d} or the {\tt c}, {\tt d} defined at the top of {\tt bar}.
+\begin{lstlisting}
+sage: bar(5,10) 
+5 10
+fun stuff
+5 10
+sage: c,d 
+(1, 10)
+\end{lstlisting}
+
 
 As illustrated above, a Python function can have side effects, and
 behave differently depending on global variables.  Thus Python
@@ -853,7 +925,25 @@ def f(x):
         return x^3
 \end{lstlisting}
 
-If we run this, we might get:
+Here we imported a Python module called {\tt time} using the Python
+{\tt import} command. 
+In case you are wondering ``what the heck is 'time''', you can type
+\begin{lstlisting}
+sage: import time
+sage: help(time)
+\end{lstlisting}
+into Sage.  In the notebook, you'll get a link to a webpage all about
+the {\tt time} Python module.  Python includes an {\em enormous}
+standard library of modules, and you should read all about them at
+\url{http://docs.python.org/library/}.  I have more than once
+reimplemented functionality that is already in one of the standard
+modules because I didn't think to look at the above web page.  Want to
+use Python to parse a webpage? create JSON or XML? use regular
+expressions? walk a directory tree?  compress a file? use a SQLite
+database?  Then consult the Python standard library.
+
+Returning to our function {\tt f} defined above, when we run it, we
+might get:
 %skip
 \begin{lstlisting}
 sage: f(7)
@@ -932,39 +1022,40 @@ This illustrates part of the ``Zen of Python'':
 To see the rest of the Zen of Python, type {\tt import this} into Sage. 
 
 \subsection{Gotcha: Default Arguments}
-Consider the following code:
+Consider the following function \verb|my_append(a,L)| which appends {\tt a} to {\tt L}, but whose second argument is optional, so \verb|my_append(a)|
+just creates a new list {\tt [a]}:
 \begin{lstlisting}
-sage: def f(a, L=[]):
+sage: def my_append(a, L=[]):
 ...       L.append(a)
 ...       print L
-sage: f(1)
+sage: my_append(1)
 [1]
-sage: f(2)
+sage: my_append(2)    # what?
 [1, 2]
-sage: f(3) 
+sage: my_append(3)    # what? what?
 [1, 2, 3]
 \end{lstlisting}
 
 What happened?  You might have expected to see output 
 of {\tt [1]}, then {\tt [2]}, then {\tt [3]}.
-Let's modify the function {\tt f} to also print the memory
+Let's modify the function \verb|my_append| to also print the memory
 location of {\tt L}.
 \begin{lstlisting}
-sage: def f(a, L=[]):
+sage: def my_append(a, L=[]):
 ...       L.append(a)
 ...       print L, id(L)
-sage: f(1)          # random memory location
+sage: my_append(1)          # random memory location
 [1] 69438424
-sage: f(2)          # same random memory location
+sage: my_append(2)          # same random memory location
 [1, 2] 69438424     
-sage: f(3)          # same random memory location
+sage: my_append(3)          # same random memory location
 [1, 2, 3] 69438424   
 \end{lstlisting}
 
-When the function {\tt f} is first encountered by the Python
+When the function \verb|my_append| is first encountered by the Python
 interpreter, it evaluates each of the default arguments.  When Python
 sees {\tt L=[]}, it creates a list in memory at location 69438424.
-Each time you call {\tt f} and don't specify the second argument, that
+Each time you call \verb|my_append| and don't specify the second argument, that
 same list---at address 69438424---is used, {\em and modified} in
 this case.
 
@@ -972,7 +1063,8 @@ this case.
 
 Python supports recursive functions, but they are cripled in that
 there is by default a fairly small limit on the depth of recursion
-(you can increase this).
+(you can increase this).  This is because Python does not have ``tail
+recursion'' like a language such as lisp.
 
 %skip
 \begin{lstlisting}
@@ -1009,6 +1101,18 @@ sage: sys.getrecursionlimit()
 1000
 sage: sys.setrecursionlimit(1000000) 
 sage: a = my_factorial(1000)   # works fine!
+\end{lstlisting}
+
+As an aside, you can in fact write little lisp programs using Sage if
+you want, since Sage includes an embedded lisp interpreter.
+For example,
+\begin{lstlisting}
+ sage: lisp.eval('(defun factorial (n) (if (= n 1) 1 (* n (factorial (- n 1)))))')
+ 'FACTORIAL'
+ sage: lisp('(factorial 10)')
+ 3628800
+ sage: lisp(10).factorial()
+ 3628800
 \end{lstlisting}
 
 
@@ -1166,9 +1270,9 @@ sage: type(a+b)
 <class '__main__.MyRational'>
 \end{lstlisting}
 
-This is because the {\tt __add__} method is execute, which explicitly
+This is because the \verb|__add__| method is execute, which explicitly
 refers to MyRational.  You can make the code more robust regarding
-derivation by using {\tt self.__class__}, as illustrated below:
+derivation by using \verb|self.__class__|, as illustrated below:
 \begin{lstlisting}
 class MyRational3(object):
     def __init__(self, n, d):  # called to initialize object
@@ -1317,7 +1421,7 @@ lists of dunder methods.
 
 
 
-\section{Data Types: Lists, Tuples, Strings and Files}\label{sec:datatypes}
+\section{Data Types: list, tuple, set, str, and file}\label{sec:datatypes}
 
 % http://wiki.wstein.org/10/480b/lectures/lec7
 % http://wiki.wstein.org/10/480b/lectures/lec8
@@ -1380,7 +1484,8 @@ sage: w = copy(v)
 sage: w.sort(); w
 [3, ['a', [1, 2]], 'hello', <type 'sage.rings.integer.Integer'>]
 sage: w.extend([1,2,3,4]); w
-[3, ['a', [1, 2]], 'hello', <type 'sage.rings.integer.Integer'>, 1, 2, 3, 4]
+[3, ['a', [1, 2]], 'hello', <type 'sage.rings.integer.Integer'>, 
+    1, 2, 3, 4]
 \end{lstlisting}
 
 You can build lists in place using list comprehension, which is a lot like "set building notation" in mathematics. For example:
@@ -1438,7 +1543,8 @@ Traceback (most recent call last):
 ...
 TypeError: 'tuple' object does not support item assignment
 sage: v[3].append('change a mutable entry'); v
-(3, 'hello', <type 'sage.rings.integer.Integer'>, ['a', [1, 2], 'change a mutable entry'])
+(3, 'hello', <type 'sage.rings.integer.Integer'>, 
+    ['a', [1, 2], 'change a mutable entry'])
 \end{lstlisting}
 
 {\bf BIG FAT WARNING:} The following looks like a ``tuple
@@ -1580,6 +1686,87 @@ sage: '%.2f   %.3f'%(.5,  7/11)
 Above, \%.2f formats the string with 2 decimal digits after the point,
 and \%.3f with 3 decimal digits.
 
+\subsection{Sets}
+
+A set consists of unique elements with no ordering.  You know what is
+or isn't in the set and can interate over it.  The elements of a set
+must be immutable, since otherwise there would be no way to guarantee
+objects stay unique after putting them together in a set.  Lists are
+{\em not immutable} so can't be put in a set, but strings can
+be.
+\begin{lstlisting}
+sage: v = ['this', 'is', 'what', 'this', 'is']; v
+['this', 'is', 'what', 'this', 'is']
+sage: X = set(v); X
+set(['this', 'is', 'what'])
+sage: type(X)
+<type 'set'>
+sage: X[0]  # makes no sense
+Traceback (most recent call last):
+...
+TypeError: 'set' object does not support indexing
+sage: 'this' in X
+True
+sage: 'that' in X
+False
+sage: for a in X: print a,
+this is what
+\end{lstlisting}
+Here is how to use the set data structure to obtain
+the distinct types appearing in a list:
+\begin{lstlisting}
+sage: v = [1/2, 5/8, 2.5, 5/2, 3.8]
+sage: t = [type(a) for a in v]; t
+[<type 'sage.rings.rational.Rational'>, 
+ <type 'sage.rings.rational.Rational'>, 
+ <type 'sage.rings.real_mpfr.RealLiteral'>, 
+ <type 'sage.rings.rational.Rational'>, 
+ <type 'sage.rings.real_mpfr.RealLiteral'>]
+sage: list(set(t))
+[<type 'sage.rings.real_mpfr.RealLiteral'>, 
+ <type 'sage.rings.rational.Rational'>]
+\end{lstlisting}
+
+If you create your own class, you can decide whether or not Python
+should consider it immutable by whether or not you define a
+\verb|__hash__| dunder method.  If defined, then your object is
+considered immutable, and is allowed in sets.  First, notice that
+sets can't contain lists.
+\begin{lstlisting}
+sage: v = [[1,2], [1,4]]
+sage: set(v)
+Traceback (most recent call last):
+...
+TypeError: unhashable type: 'list'
+\end{lstlisting}
+However, nothing stops us from making a class that derives from list and has a hash method:
+\begin{lstlisting}
+class NaughtyList(list):
+      def __hash__(self):     # a 32 or 64-bit int; equal objects should have the same hash.
+          return hash(str(self))
+\end{lstlisting}
+\begin{lstlisting}
+sage: v = [NaughtyList([1,2]), NaughtyList([1,4])]; v
+[[1, 2], [1, 4]]
+sage: X = set(v); X
+set([[1, 2], [1, 4]])
+\end{lstlisting}
+Do something naughty:
+\begin{lstlisting}
+sage: v[1][1] = 2
+sage: X
+set([[1, 2], [1, 2]])
+sage: v[0] == v[1]
+True
+\end{lstlisting}
+The set doesn't know:
+\begin{lstlisting}
+sage: X
+set([[1, 2], [1, 2]])
+\end{lstlisting}
+
+
+
 \subsection{Files}
 
 It is straightforward to open, read, write, append to, and close files
@@ -1618,8 +1805,9 @@ sage notebook: print DATA
 Another important topic involving files is how to read in interesting
 files, e.g., png image files, wav audio files, csv files, Excel
 spreadsheets, etc.  There are various ways of loading a huge range of
-interesting files into Sage, but no unfortunately there is still no
-single simple command that does them all.
+interesting files into Sage, but unfortunately there is still no
+single simple command that parses them all.  This would be a good idea
+for a student project. 
 
 
 \section{Exception Handling}
@@ -1827,7 +2015,7 @@ to construct, and then it was immediately discarded.  {\bf Moral:}
   include along with an exception!}
 
 
-\section{Decorators}
+\section{Decorators}\label{sec:decorators}
 
 The definition of decorators is remarkably simple,
 but using them is subtle, powerful, and potentially dangerous.
