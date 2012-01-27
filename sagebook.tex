@@ -1812,21 +1812,76 @@ for a student project.
 
 \section{Exception Handling}
 
-Like many standard programming languages, Python supports exception
-handling, which allows you to raise and handle error conditions
-eloquently.  The syntax in Python for exception handling is as simple
-and straightforward as you can possibly imagine.  
+Python fully supports exception handling, which allows us to raise and
+handle error conditions eloquently.  The syntax in Python for
+exception handling is as simple and straightforward as you can
+possibly imagine.
 
-As a first example, we create a function {\tt divide}.  If the second
-input {\tt d} is zero, the function raises an exception.
+We would like to write a function \verb|formal_sum| that
+takes as input two arbitrary objects, and adds them (using +) if {\em
+  possible}, and if not creates their sum in some formal sense.
+Our first attempt, of course, does not just magically just work:
+\begin{lstlisting}
+def formal_sum(a, b):
+    return a + b
+\end{lstlisting}
+Then:
+\begin{lstlisting}
+sage: formal_sum(2, 3)   # good
+5
+sage: formal_sum(5, [1,2,3])   # nope
+Traceback (most recent call last):
+...
+TypeError: unsupported operand parent(s) for '+': 
+           'Integer Ring' and '<type 'list'>'
+\end{lstlisting}
+How can we {\em know} whether or not \verb|a + b| will work? 
+You could try to do something really complicated by attempting
+to predict (via looking at code?) whether \verb|__add__| will work,
+but that way insanity lies.  Instead, use {\em exception handling}:
+
+\begin{lstlisting}
+class FormalSum(object):
+    def __init__(self, a, b):
+        self.a = a; self.b = b
+    def __repr__(self):
+        return '%s + %s'%(self.a, self.b)    
+        
+def formal_sum(a, b):
+    try:
+        return a + b
+    except TypeError:
+        return FormalSum(a,b)
+\end{lstlisting}
+The class {\tt FormalSum} block above defines a new Python class whose instances
+represent the formal sum of the two attributes {\tt a} and {\tt b}, and which
+print themselves nicely.   The function \verb|formal_sum| tries to add
+{\tt a} and {\tt b}, and if this causes a {\tt TypeError}, it instead creates
+a {\tt FormalSum} instance. 
+\begin{lstlisting}
+sage: formal_sum(3, 8)
+11
+sage: formal_sum(5, [1,2,3])
+5 + [1, 2, 3]
+sage: formal_sum(5, 'five')
+5 + five
+\end{lstlisting}
+
+
+
+For our next example, instead of catching an error, we create a
+function {\tt divide} that raises an error if the second input {\tt d}
+equals {\tt 0}.
 
 %skip
 \begin{lstlisting}
 def divide(n, d):
     if d == 0:
-        raise ZeroDivisionError, "Cannot divide by 0"
+        raise ZeroDivisionError, "divide by 0!?!"
     return n/d
 \end{lstlisting}
+
+Try it out:
 
 %skip
 \begin{lstlisting}
@@ -1835,12 +1890,12 @@ sage: divide(5, 7)
 sage: divide(5, 0)
 Traceback (most recent call last):
 ...
-ZeroDivisionError: Cannot divide by 0
+ZeroDivisionError: divide by 0!?!
 \end{lstlisting}
 
-In fact, anytime you try to divide numbers at the denominator is 0,
-Sage will raise a {\tt ZeroDivisionError}.  We can catch this case if
-we want, and return something else, as illustrated below:
+Typically, if you try to divide numbers at the denominator is 0, Sage
+will raise a {\tt ZeroDivisionError}.  Just as above, we can catch
+this case if we want, and return something else, as illustrated below:
 
 %skip
 \begin{lstlisting}
@@ -1954,20 +2009,79 @@ The form of the except statement is:
 \begin{lstlisting}
       except (tuple,of,exceptions), message</p>
 \end{lstlisting}
-A common and extremely confusing error, is to write
+
+For example,
+\begin{lstlisting}
+try:
+    import foobar
+    1/0
+except (ZeroDivisionError, ImportError), msg:
+    print "oops --", msg
+\end{lstlisting}
+outputs {\tt oops -- No module named foobar}
+and
+\begin{lstlisting}
+try:
+    1/0
+    import foobar
+except (ZeroDivisionError, ImportError), msg:
+    print "oops --", msg
+\end{lstlisting}
+outputs {\tt oops -- Rational division by zero}.
+
+An extremely confusing error, which has cost me hours of frustration,
+is to write
 %skip
 \begin{lstlisting}
       except exception1, exception2:
 \end{lstlisting}
 
 The result is that if exception1 occurs, then exception2 is set to the
-error message.  This is very confusing.  I have wasted hours because
-of this.  Don't make the same mistake.
+error message.   Don't make the same mistake.
 
- 
-Another {\em major mistake} I made once\footnote{Actually, several
-  hundred times!} with exceptions is illustrated in the following
-example code:
+For example, if we evaluate
+\begin{lstlisting}
+try:
+    1/0
+    import foobar
+except ZeroDivisionError, ImportError:
+    print "oops --"
+\end{lstlisting}
+then evaluate
+\begin{lstlisting}
+try:
+    import foobar
+    1/0
+except ImportError, ZeroDivisionError:
+    print "oops --"
+\end{lstlisting}
+we see
+\begin{lstlisting}
+Traceback (click to the left of this block for traceback)
+...
+ImportError: No module named foobar
+\end{lstlisting}
+
+Wait, what just happened above?  We appear to have totally broken
+Python!?  Actually, we have smashed the {\tt ImportError} variable,
+making it point at the {\tt ZeroDivisionError} message above!
+
+\begin{lstlisting}
+sage: ImportError
+ZeroDivisionError('Rational division by zero',)
+\end{lstlisting}
+We can fix this for now using the {\tt reset} command, which resets a variable
+to its default state when Sage started up:
+\begin{lstlisting}
+sage: reset('ImportError')
+sage: ImportError
+<type 'exceptions.ImportError'>
+\end{lstlisting}
+
+
+Another {\em major mistake} I made once\footnote{Actually, I made it
+  several hundred times in 2005--2006!}
+with exceptions is illustrated in the following example code:
 %skip
 \begin{lstlisting}
 def divide(n, d):
@@ -1976,7 +2090,7 @@ def divide(n, d):
 \end{lstlisting}
 
 It's so friendly and nice having a helpful error message that explains
-what went wrong in the division:
+what went wrong in the division, right? (No!):
 %skip
 \begin{lstlisting}
 sage: divide(3948,0)
