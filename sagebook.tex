@@ -3837,15 +3837,16 @@ hundreds of thousands of tests are run to increase the chances Sage
 will actually work correctly when you use it.
 
 The way in which Sage is distributed---as both a core library and its
-dependencies---is highly unusual in the world of open source software,
-though it is similar to how other mathematical software of comparable
-size and scope to Sage is released (Magma, Mathematica, Matlab, Maple,
-Enthought's Python Distribution, etc.)  Mathematical software is
-highly interrelated and extremely sensitive to even the slightest
-changes anywhere in the system, and because Sage has such a large test
-suite, we notice these issues.  It is a constant and difficult battle
-just to keep the components of Sage working together as new and
-hopefully improved releases of each component appear.
+dependencies---is somewhat unusual in the world of open source
+software, though it is similar to how other mathematical software of
+comparable size and scope to Sage is released (Magma, Mathematica,
+Matlab, Maple, Enthought's Python Distribution, etc.)  Mathematical
+software is highly interrelated and extremely sensitive to even the
+slightest changes anywhere in the system, and because Sage has such a
+large test suite, we actually notice these issues.  It is a constant
+and difficult battle just to keep the components of Sage working
+together as new and hopefully improved releases of each component
+appear.
 
 Each new Sage release has an associated changelog, which lists all of
 the changes that were made to Sage in that release, along with
@@ -3984,7 +3985,7 @@ We will do a careful slow step-by-step live demo that illustrates some
 of Sage development.
 %skip
 \begin{lstlisting}
-<pre>my_laptop ssh math480@sage.math.washington.edu
+my_laptop ssh math480@sage.math.washington.edu
 
 math480@sage:~$ cd scratch
 math480@sage:~/scratch$ ls
