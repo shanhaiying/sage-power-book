@@ -2463,23 +2463,24 @@ see the README file, especially the section at the end called
 
 \chapter{Cython}\label{ch:cython} 
 
-In addition to the Sage-related examples and discussion below, to
-really learn Cython, I strongly recommend that you read straight as
-much of the Cython Users Guide (see
-\url{http://docs.cython.org/src/userguide/}) as you can trying out
-everything, and the other Cython documentation (see
-\url{http://docs.cython.org/}) as well.
+Cython is a compiled variant of the Python language, that can be used
+to write very, very fast code for Sage, and makes it possible to
+efficiently use code from existing C/C++ libraries in Sage, or write
+part of a program in C and the other part in Sage.
+
+Additional references for learning Cython include the Cython Users
+Guide (see \url{http://docs.cython.org/src/userguide/}) as you can,
+and the other Cython documentation (see \url{http://docs.cython.org/}).
 
 \section{An Example: Speeding up a Simple Function}
 
 Let's start with a first simple example.  We write a Python program
 that computes the sum of the integers up to $n$ using a naive
-bruteforce algorithm\footnote{Of course, a better approach is to use
-  the formula $\sum_{i=1}^n = \frac{n(n+1)}{2}$!}
+bruteforce algorithm.
 %skip
 \begin{lstlisting}
 def python_sum(n):
-    # Python int's are faster than Sage ints for very small numbers
+    # Python int's are faster than Sage ints for small numbers
     s = int(0)    
     for i in range(1, n+1):
         s += i
@@ -2492,15 +2493,15 @@ Now try it out:
 sage: python_sum(10^5)
 5000050000
 sage: timeit('k = python_sum(10^5)')
-25 loops, best of 3: 11.9 ms per loop
+125 loops, best of 3: 6.06 ms per loop
 \end{lstlisting}
 
-Let's rewrite this program, but in Cython (which is a Pythonish-to-C
-compiler).  Note that our ``rewritten'' program looks identical---the
-only difference so far is that we told Sage to compile the program
-using Cython by putting {\tt \%cython} at the beginning of the block
-(If you are using the command line instead of the notebook, put the
-code without \verb|%cython|
+Let's rewrite this program, but using Cython.  Note that our
+``rewritten'' program looks identical---the only difference so far is
+that we told Sage to compile the program using Cython by putting {\tt
+  \%cython} at the beginning of the block (if you are using the
+command line instead of the notebook, put the code without
+\verb|%cython|
 in a file \verb|foo.pyx|, then type \verb|load foo.pyx|.)
 
 %skip
@@ -2530,39 +2531,39 @@ Is the Cython program any faster?
 sage: cython_sum(10^5)
 5000050000
 sage: timeit('cython_sum(10^5)')      # your mileage may vary
-25 loops, best of 3: 12.1 ms per loop
+125 loops, best of 3: 3.35 ms per loop
 \end{lstlisting}
 
-What?! If you were to think very carefully about what the computer is
-actually doing when running \verb|cython_sum| and \verb|python_sum|,
-you would find that it is doing the same thing in both cases.  In
-the case of \verb|python_sum|, the Python interpreter is carrying out a
-sequence of operations (calling functions in the Python C library),
-and in the case of \verb|cython_sum|, a C program is running (the
-compiled Cython module), which is simply calling exactly the same
-functions in the Python C library.  
+The Cython program is not that much faster, because the computer
+is doing essentially the same thing in both functions.
+In the case of \verb|python_sum|,
+the Python interpreter is carrying out a sequence of operations
+(calling functions in the Python C library), and in the case of
+\verb|cython_sum|, a C program is running (the compiled Cython
+module), which is simply calling exactly the same functions in the
+Python C library.
 
-To get a major speedup, we must {\em change the game}.  Cython makes
-this possible by letting you declare variables to have a specific
-datatype.  When you understand the implications of this (do not worry
-if you don't yet!), you can safely write code that in some situations
-is dramatically faster, depending on the situation.  Observe:
+To get a major speedup, we declare certain variables to have C data
+types. Once you understand the implications of this, you can write
+code that in some situations is over a hundred times faster than
+anything possible using Python.  Observe:
 
 %skip
 \begin{lstlisting}
 %cython
-def cython_sum_typed(n):
+def cython_sum_typed(long n):
     cdef long i, s
     s = 0
     for i in range(1, n+1):
         s += i
     return s
 \end{lstlisting}
-The {\em only} difference is that we added a single new line:
-\verb|cdef long i, s|.  This tells Cython to treat {\tt i} and {\tt s}
+The differences are that we declared {\tt n} to be long and we added a
+new line \verb|cdef long i, s|, which declares {\tt i} and {\tt s} to
+also be long.  This tells Cython to treat {\tt n}, {\tt i} and {\tt s}
 as being of data type {\tt long}, which is a 32 or 64-bit integer,
-depending on the computer you're using.  This is literally the same as
-the long datatype in C/C++/Java.
+depending on the computer you're using.  This is the same as the long
+datatype in C.  Let's see if this is faster.
 
 
 %skip
@@ -2570,19 +2571,17 @@ the long datatype in C/C++/Java.
 sage: cython_sum_typed(10^5)
 5000050000
 sage: timeit('cython_sum_typed(10^5)')
-625 loops, best of 3: 69.4 µs per loop
+625 loops, best of 3: 69.4 microseconds per loop
 sage: 11.9/.069
 172.463768115942
 \end{lstlisting}
-By adding that one line  we made our code over 170
+By adding that one line we made our code over 170
 times faster!
 
 
-But watch out, {\tt long} integers silently {\em overflow}, and
-silently behave differently depending on whether you're using a 32 or
-64-bit operating system.  It is absolutely critical to understand this
-distinction if you want to make truly effective use of computers.
-
+But watch out, {\tt long} integers {\em overflow}.  Moreover, as
+mentioned above, they may be either 32 or 64-bit depending on the
+computer you are using.
 The following example illustrates overflow:
 %skip
 \begin{lstlisting}
@@ -2600,6 +2599,11 @@ sage: longmul(2^20, 2^50)   # overflows!
 0
 sage: 2^20 * 2^50
 1180591620717411303424
+\end{lstlisting}
+
+This example illustrates overflow with the \verb|cython_sum_typed| function:
+\begin{lstlisting}
+
 \end{lstlisting}
 
 
@@ -4017,19 +4021,92 @@ Now make some change (using vim, emacs, pico, etc.), do "sage -br" to
 make change take effect.  Then make a patch and export it.
 
 \section{How to modify the Sage library and create a patch}
-\begin{verbatim}
-     0. Turn on screen capture using Quicktime (plus I'll do this all in one terminal and paste the session log below, though editing won't get recorded).
-     1. Login to the math480@sage.math.washington.edu account.  NOTE: On Windows, install [http://www.chiark.greenend.org.uk/~sgtatham/putty/ Putty]. On Linux and OS X use the command line (e.g., Terminal) and type "ssh math480@sage.math.washington.edu". 
-     2. Change to directory with my sage install in it and type "here" to setup PATH.
-     2. Make a change to the Sage library source code using pico, based on a suggestion from class.
-     3. Save the change and test it using "sage -br"
-     4. Type "hg diff" to see the change (your shell current working directory must be a subdirectory of SAGE_ROOT/devel/sage/)
-     5. Type "hg commit" to save changes as a commit.  Type "hg revert --all" to instead undo everything you have done.  Enter a log message on the first line and save the file, when you do "hg commit".
-     6. Type "hg log|more" to see that you have done something.
-     7. Type "hg export tip > file.patch" to create a patch file.   You can get the patch by navigating to the directory in which you typed this command, starting here: http://sage.math.washington.edu/home/math480/scratch/
-     8. Congrats, we have our patch.   If we don't like it and want to start over, do "hg rollback".  This will reset things to be exactly like they were before we typed "hg commit" above. 
-     9. Remark: For much finer control over making patches, people usually use "Mercurial Queues", as described here in [http://sagemath.org/doc/developer/ The Sage developers guide].      You do not have to use them for your homework. 
-\end{verbatim}
+\begin{enumerate}
+\item Use an ssh client to connect to {\tt math480@sage.math.washington.edu}.
+   I told you the password during class. 
+   On Windows, putty is a good client.
+   On OS X or Linux, just open a terminal and type:
+         {\tt ssh math480@sage.math.washington.edu}
+
+\item The minimum commands you'll need to know to use the command prompt
+   for this assignment are.  So look these over:
+\begin{itemize}    
+      \item {\tt pwd} = print working directory = "where am I"?
+      \item {\tt ls} = list files in working directory
+      \item {\tt cd ..} = move up one directory
+      \item \verb|cd directory_name| = move into \verb|directory_name|
+      \item \verb|tar xf /home/math480/scratch/sage-4.8-sage.math.washington.edu-x86_64-Linux.tar.gz|
+             = extract your own copy of Sage into the current directory
+      \item {\tt mv dir1 dir2} = rename dir1 to dir2 (or file1 to file2)
+      \item \verb|mkdir directory_name| = make a directory
+      \item {\tt pico filename} = edit the given file
+      \item {\tt hg commit} = commit your changes to your local repository
+      \item {\tt hg export tip > my.patch} = export your changes to the file my.patch
+      \item {\tt hg rollback} = use this only if you want to undo the commit.
+      \item \verb|/home/math480/scratch/your_name/sage/sage -br| = \underline{b}uild and \underline{r}un modified sage
+      \item You can browse your files at\\
+           \url{http://sage.math.washington.edu/home/math480/scratch/}
+         \end{itemize}
+         Now we'll proceed step-by-step to use the above commands to make
+   your patch.
+
+\item Make your own directory:
+\begin{lstlisting}
+cd scratch
+mkdir your_name
+cd your_name
+\end{lstlisting}
+
+\item Extract sage into your directory:
+\begin{lstlisting}
+tar xf /home/math480/scratch/sage-4.8-sage.math.washington.edu-x86_64-Linux.tar.gz
+\end{lstlisting}
+This will extract over 50,000 files and takes between 1 minute and 15 minutes -- be patient.
+
+\item Rename your sage install:
+\begin{lstlisting}
+mv sage-4.8-sage.math.washington.edu-x86_64-Linux sage
+\end{lstlisting}
+    
+\item Find some file(s) to edit:
+\begin{lstlisting}
+cd sage/devel/sage/sage/
+ls
+cd some_subdirectory
+pico some_file
+\end{lstlisting}
+    
+\item Test out your changes:
+\begin{lstlisting} 
+/home/math480/scratch/your_name/sage/sage -br
+\end{lstlisting}
+The first time you do this it will take about a minute.  Afterwards it should only
+take a second or two.
+
+\item Commit your changes (enter a 1-line description into the editor that pops up):
+\begin{lstlisting} 
+hg commit  
+\end{lstlisting}
+
+\item Oops, change your mind?!
+\begin{lstlisting} 
+hg rollback
+\end{lstlisting}
+Now make more changes and go to step 7.   
+Make sure to do {\tt hg commit} before going to step 10.
+
+\item Export your changes
+\begin{lstlisting} 
+hg export tip > my.patch
+\end{lstlisting}
+
+\item Find the file {\tt my.patch} by browsing to\\
+\url{http://sage.math.washington.edu/home/math480/scratch/}
+
+\item Download {\tt my.patch} and attach it to your email to me. 
+\end{itemize}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{How Sage Uses Other Math Software Systems}\label{ch:interfaces}
