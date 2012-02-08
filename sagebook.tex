@@ -2474,29 +2474,109 @@ and the other Cython documentation (see \url{http://docs.cython.org/}).
 
 \section{An Example: Speeding up a Simple Function}
 
-Let's start with a first simple example.  We write a Python program
-that computes the sum of the integers up to $n$ using a naive
-bruteforce algorithm.
-%skip
+Let's start with a first simple example.  We write a brute force
+Python program that computes a double precision (53-bit) floating
+point approximation to
+$$
+  f(n) = \sin(1) + \sin(2) + \sin(3) + \cdots + \sin(n-1) + \sin(n),
+$$
+for $n$ any positive integer.
+Let's start with the most naive and straightforward 
+implementation of this:
+\begin{lstlisting}
+def python_sum_symbolic(n):
+    return float( sum(sin(n) for n in xrange(1,n+1)) )
+\end{lstlisting}
+
+As a sanity check for each of our implementations, we compute $f(1000)$:
+\begin{lstlisting}
+sage: python_sum_symbolic(1000)
+0.813969634073164
+\end{lstlisting}
+
+Let's benchmark it (these benchmarks were done under OS X on a 2.66GHz
+Intel Core i7 laptop).
+\begin{lstlisting}
+sage: timeit('python_sum_symbolic(1000)')
+5 loops, best of 3: 193 ms per loop
+\end{lstlisting}
+
+Next, try a bigger input.  We use time instead, since that only runs
+the function once, and this is going to take awhile:
+
+\begin{lstlisting}
+sage: time python_sum_symbolic(10^4)
+1.6338910217924467
+Time: CPU 15.88 s, Wall: 17.64 s
+\end{lstlisting}
+
+
+This is really, really, shockingly slow.  By the end of this section,
+you'll see how to compute $f(n)$ over {\bf 17 million times} faster!
+
+
+One reason \verb|python_sum_symbolic| is so bad, is that the 
+\verb|sin| function is a ``symbolic function'', in that it keeps
+track of exact values, etc.  For example,
+\begin{lstlisting}
+sage: sum(sin(n) for n in xrange(1, 10+1))
+sin(1) + sin(2) + sin(3) + sin(4) + sin(5) + sin(6) + 
+sin(7) + sin(8) + sin(9) + sin(10)
+\end{lstlisting}
+
+So the \verb|python_sum_symbolic| function is computing a huge formal
+sum, then converting each summand to a float, and finally adding them
+up.  This is wasteful.  Our next implementation using a different sin
+function, one that is standard with Python, which immediately turns
+its input into a float (53-bit double precision number), computes 
+\verb|sin|, and returns the result as a float.
+
 \begin{lstlisting}
 def python_sum(n):
-    # Python int's are faster than Sage ints for small numbers
-    s = int(0)    
+    from math import sin
+    return sum(sin(i) for i in xrange(1, n+1))
+\end{lstlisting}
+
+
+How does this do?
+\begin{lstlisting}
+sage: python_sum(1000)  # right answer
+0.8139696340731659
+sage: timeit('k = python_sum(1000)')
+625 loops, best of 3: 185 microseconds per loop
+sage: timeit('k = python_sum(10^4)')
+125 loops, best of 3: 2.07 ms per loop
+\end{lstlisting}
+Thus \verb|python_sum| is over {\em one thousand times faster}
+than \verb|python_sum_symbolic|!
+
+\begin{lstlisting}
+sage: 193e-3 / 185e-6
+1043.24324324324
+sage: 15.88 / 2.07e-3
+7671.49758454106
+\end{lstlisting}
+
+
+Perhaps there is some win in not using \verb|sum|?
+\begin{lstlisting}
+def python_sum2(n):
+    from math import sin
+    s = float(0)
     for i in range(1, n+1):
-        s += i
+        s += sin(i)
     return s
 \end{lstlisting}
 
-Now try it out:
-%skip
+Try it out: nope, no win at all (!):
 \begin{lstlisting}
-sage: python_sum(10^5)
-5000050000
-sage: timeit('k = python_sum(10^5)')
-125 loops, best of 3: 6.06 ms per loop
+sage: timeit('k = python_sum2(10^4)')
+125 loops, best of 3: 2.11 ms per loop
 \end{lstlisting}
 
-Let's rewrite this program, but using Cython.  Note that our
+
+Next we try using Cython to make our code faster. 
+Note that our
 ``rewritten'' program looks identical---the only difference so far is
 that we told Sage to compile the program using Cython by putting {\tt
   \%cython} at the beginning of the block (if you are using the
@@ -2508,10 +2588,8 @@ in a file \verb|foo.pyx|, then type \verb|load foo.pyx|.)
 \begin{lstlisting}
 %cython
 def cython_sum(n):
-    s = int(0)
-    for i in range(1, n+1):
-        s += i
-    return s
+    from math import sin
+    return sum(sin(i) for i in xrange(1, n+1))
 \end{lstlisting}
 
 If you evaluate the above code in the Sage notebook, you'll see that
@@ -2528,61 +2606,71 @@ two linked files appear after the input cell:
 Is the Cython program any faster?
 %skip
 \begin{lstlisting}
-sage: cython_sum(10^5)
-5000050000
-sage: timeit('cython_sum(10^5)')      # your mileage may vary
-125 loops, best of 3: 3.35 ms per loop
+sage: cython_sum(1000)    # it works
+0.8139696340731659
+sage: timeit('cython_sum(1000)')
+625 loops, best of 3: 144 microseconds per loop
+sage: timeit('k = cython_sum(10^4)')
+625 loops, best of 3: 1.52 ms per loop
+\end{lstlisting}
+It's faster, but only about 30\% faster.  This is very typical 
+of what you should expect by simply putting \verb|%cython| above Python
+code. 
+\begin{lstlisting}
+sage: 2.07/1.52
+1.36184210526316
 \end{lstlisting}
 
-The Cython program is not that much faster, because the computer
+
+The Cython program is not {\em that} much faster, because the computer
 is doing essentially the same thing in both functions.
 In the case of \verb|python_sum|,
 the Python interpreter is carrying out a sequence of operations
 (calling functions in the Python C library), and in the case of
 \verb|cython_sum|, a C program is running (the compiled Cython
-module), which is simply calling exactly the same functions in the
+module), which is simply calling pretty much the same functions in the
 Python C library.
 
-To get a major speedup, we declare certain variables to have C data
-types. Once you understand the implications of this, you can write
-code that in some situations is over a hundred times faster than
-anything possible using Python.  Observe:
+To get a further speedup, we declare certain variables to have C data
+types and use a C version of the sin function.
 
 %skip
 \begin{lstlisting}
 %cython
-def cython_sum_typed(long n):
-    cdef long i, s
-    s = 0
-    for i in range(1, n+1):
-        s += i
-    return s
+cdef extern from "math.h":
+    double sin(double)
+
+def cython_sum_typed_lib(long n):
+    cdef long i
+    return sum(sin(i) for i in range(1, n+1))
 \end{lstlisting}
 The differences are that we declared {\tt n} to be long and we added a
-new line \verb|cdef long i, s|, which declares {\tt i} and {\tt s} to
-also be long.  This tells Cython to treat {\tt n}, {\tt i} and {\tt s}
+new line \verb|cdef long i|, which declares {\tt i} to
+also be long.  This tells Cython to treat {\tt n} and {\tt i}
 as being of data type {\tt long}, which is a 32 or 64-bit integer,
-depending on the computer you're using.  This is the same as the long
-datatype in C.  Let's see if this is faster.
+depending on the computer you're using. 
+This is the same as the long
+datatype in C.  
+We also call the \verb|sin| function in the math C library.
+Let's see if this is faster.
 
-
-%skip
 \begin{lstlisting}
-sage: cython_sum_typed(10^5)
-5000050000
-sage: timeit('cython_sum_typed(10^5)')
-625 loops, best of 3: 69.4 microseconds per loop
-sage: 11.9/.069
-172.463768115942
+sage: cython_sum_typed_lib(1000)
+0.8139696340731659
+sage: timeit('cython_sum_typed_lib(1000)')
+625 loops, best of 3: 85.2 µs per loop
+sage: timeit('cython_sum_typed_lib(10^4)')
+625 loops, best of 3: 951 µs per loop
+sage: 2.07e-3 / 778e-6
+2.66066838046272
 \end{lstlisting}
-By adding that one line we made our code over 170
-times faster!
 
+So now our coding is beating the pure Python code by a factor of nearly 3. 
 
-But watch out, {\tt long} integers {\em overflow}.  Moreover, as
-mentioned above, they may be either 32 or 64-bit depending on the
-computer you are using.
-The following example illustrates overflow:
+In general, you have to be more careful, e.g., {\tt long} integers
+{\em overflow}. They may be either 32 or 64-bit
+depending on the computer you are using.  The following example
+illustrates overflow:
 %skip
 \begin{lstlisting}
 %cython
@@ -2601,10 +2689,129 @@ sage: 2^20 * 2^50
 1180591620717411303424
 \end{lstlisting}
 
-This example illustrates overflow with the \verb|cython_sum_typed| function:
-\begin{lstlisting}
 
+For our next optimization, we use a for loop instead of the
+sum command:
+\begin{lstlisting}
+%cython
+cdef extern from "math.h":
+    double sin(double)
+
+def cython_sum_typed_lib_loop(long n):
+    cdef long i
+    cdef double s = 0
+    for i in range(1, n+1):
+        s += sin(i)
+    return s
 \end{lstlisting}
+In Cython, this is really worth it. 
+\begin{lstlisting}
+sage: cython_sum_typed_lib_loop(1000)
+0.8139696340731659
+sage: timeit('cython_sum_typed_lib_loop(10^4)')
+625 loops, best of 3: 298 µs per loop
+sage: 2.07e-3 / 298e-6
+6.94630872483221
+\end{lstlisting}
+We thus obtain a speedup of a factor of about 7 by switching
+from Python to Cython, and implementing exactly the same algorithm.
+Way under the hood, the same \verb|sin| function (providing by the
+math library on the operating system) is being called, but 
+the Cython version of the function avoids a lot of overhead. 
+
+
+
+Another approach to this particular numerical problem is to use the
+numpy library, which allows one to evaluate a function on all entries
+in an array, and sum the entries.  This is called ``vectorization''. 
+Here's what we get in this particular example:
+
+\begin{lstlisting}
+def sum_numpy(n):
+    import numpy
+    return sum(numpy.sin(numpy.array(range(1, n+1))))
+\end{lstlisting}
+
+Let's try it out:
+\begin{lstlisting}
+sage: sum_numpy(1000)
+0.81396963407316592
+sage: timeit('sum_numpy(10^4)')
+625 loops, best of 3: 1.33 ms per loop
+sage: 2.07e-3 / 1.33e-3
+1.55639097744361
+\end{lstlisting}
+So for this benchmark, our Numpy implementation is slightly better than
+pure Python, but Cython is still much faster. 
+
+Finally, we try a different algorithm, both using Python and Cython.
+The symbolic capabilities of Sage can be used to find closed
+form expressions for certain formal sums.
+\begin{lstlisting}
+sage: var('i, n')
+sage: f = sum(sin(i), i, 1, n).full_simplify(); f
+1/2*((cos(1) - 1)*sin(n*arctan(sin(1)/cos(1))) +
+sin(1)*cos(n*arctan(sin(1)/cos(1))) - sin(1))/(cos(1) - 1)
+\end{lstlisting}
+Thus (and I had no idea before trying this),
+$$
+  f(n) = \frac{{\left(\cos\left(1\right) - 1\right)} \sin\left(n \arctan\left(\frac{\sin\left(1\right)}{\cos\left(1\right)}\right)\right) + \sin\left(1\right) \cos\left(n \arctan\left(\frac{\sin\left(1\right)}{\cos\left(1\right)}\right)\right) - \sin\left(1\right)}{2 \, {\left(\cos\left(1\right) - 1\right)}}
+$$
+
+Using this, we can give an algorithm to compute this sum that is much
+faster than anything above, and scales much better as well
+to larger $n$.
+\begin{lstlisting}
+def sum_formula(n):
+    from math import sin, cos, atan as arctan
+    return (1/2*((cos(1) - 1)*sin(n*arctan(sin(1)/cos(1))) + 
+       sin(1)*cos(n*arctan(sin(1)/cos(1))) - sin(1))/(cos(1) - 1))
+\end{lstlisting}
+How does it do?
+\begin{lstlisting}
+sage: sum_formula(1000)
+0.8139696340731664
+sage: timeit('sum_formula(10^4)')
+625 loops, best of 3: 36.5 µs per loop
+sage: 2.07e-3 / 36.5e-6
+56.7123287671233
+\end{lstlisting}           
+Finally, we implement the closed formula, but instead in Cython.
+
+\begin{lstlisting}
+%cython
+
+cdef extern from "math.h":
+    double sin(double)
+    double cos(double)
+    double atan(double)
+
+def sum_formula_cython(double n):
+    return (.5*((cos(1) - 1)*sin(n*atan(sin(1)/cos(1))) + 
+      sin(1)*cos(n*atan(sin(1)/cos(1))) - sin(1))/(cos(1) - 1))
+\end{lstlisting}
+
+This is 40 times faster than our Python implementation!
+\begin{lstlisting}
+sage: sum_formula_cython(1000)
+0.8139696340731664
+sage: timeit('sum_formula_cython(10^4)')
+625 loops, best of 3: 906 ns per loop
+sage: 36.5e-6 / 906e-9
+40.2869757174393
+\end{lstlisting}
+And it is over 2000 times faster than \verb|python_sum|. 
+
+\begin{lstlisting}
+sage: 2.07e-3 / 906e-9
+2284.76821192053
+\end{lstlisting}
+It is a whopping {\bf 17 million times} faster than our first attempt!
+\begin{lstlisting}
+sagre: 15.88 / 906e-9
+1.75275938189845e7
+\end{lstlisting}
+
 
 
 \section{Using External C/C++ Code}
