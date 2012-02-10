@@ -3044,6 +3044,66 @@ Traceback (most recent call last):
 TypeError: Expected dict, got sage.rings.integer.Integer
 \end{lstlisting}
 
+
+We can also define a new Cython cdef'd class and use that type in cdef:
+\begin{lstlisting}
+%cython
+cdef class MyNumber:
+    cdef int n
+    def __init__(self, k):
+        self.n = k
+    def __repr__(self):
+        return repr(self.n)
+
+def type_example3(MyNumber z):
+    cdef MyNumber w = MyNumber(5)
+    print z, w
+\end{lstlisting}
+Use it:
+
+\begin{lstlisting}
+sage: type_example3(MyNumber(10))
+10 5
+sage: type_example3(10)
+Traceback (most recent call last):
+...
+TypeError: Argument 'z' has incorrect type...
+\end{lstlisting}
+
+Terrifying caveat!: Any type can also be {\tt None}, which will cause
+horrible segfaults. Use \verb|not None| to deal with this.
+
+\begin{lstlisting}
+sage: type_example3(None)  # this could be very bad
+None 5
+\end{lstlisting}
+
+This is how to be safe:
+\begin{lstlisting}
+%cython
+cdef class MyNumber:
+    cdef int n
+    def __init__(self, k):
+        self.n = k
+    def __repr__(self):
+        return repr(self.n)
+
+def type_example4(MyNumber z not None):
+    cdef MyNumber w = MyNumber(5)
+    print z, w
+\end{lstlisting}
+
+Now None is rejected:
+\begin{lstlisting}
+sage: type_example4(MyNumber(4))
+4 5
+sage: type_example4(None)
+Traceback (most recent call last):
+...
+TypeError: Argument 'z' has incorrect type ...
+\end{lstlisting}
+
+
 For the Cython source code of Sage integers, in the Sage library see
 \verb|rings/integer.pxd| and \verb|rings/integer.pyx|.  Also, browse
 \verb|libs/gmp/| for the definition of functions such as
